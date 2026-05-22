@@ -1,7 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react' // Pulito e raggruppato qui
+import { useState, useEffect } from 'react' 
 import { useRouter } from 'next/navigation'
-import { supabase } from '../supabase' // Usa il tuo percorso originale per supabase
+import { supabase } from '../supabase' 
 
 export default function Login() {
   // Stati di navigazione interna: 'login' | 'registrati' | 'reset'
@@ -24,27 +24,27 @@ export default function Login() {
   // Controllo automatico della sessione per non perdere il login
   useEffect(() => {
     if (typeof window !== 'undefined') {
-    const recuperaSessioneEsistente = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        // Se l'utente è già loggato, lo mandiamo alla dashboard/home principale
-        router.push('/formazione') // <-- Modifica '/dashboard' con il percorso reale della tua home privata online
+      const recuperaSessioneEsistente = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          router.push('/formazione') 
+        }
       }
+
+      recuperaSessioneEsistente()
+
+      // Resta in ascolto se l'utente fa login o logout
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          router.push('/formazione') 
+        } else {
+          setVista('login') 
+        }
+      })
+
+      return () => subscription.unsubscribe()
     }
-
-    recuperaSessioneEsistente()
-
-    // Resta in ascolto se l'utente fa login o logout
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        router.push('/formazione') // <-- Modifica anche qui con il percorso reale
-      } else {
-        setVista('login') 
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [router])
+  }, [router]) // <-- Chiusura corretta del blocco IF e dello useEffect
 
   // 1. GESTIONE ACCESSO (LOGIN)
   const handleLogin = async (e) => {
