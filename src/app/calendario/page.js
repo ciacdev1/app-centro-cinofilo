@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic'
 
 // 🔥 Questo è il trucco: carica il calendario SOLO sul browser del cliente
 const CalendarioCiacDinamico = dynamic(
-  () => import('./components/CalendarioCiac'), // Controlla che il percorso del file sia corretto!
+  () => import('@/components/CalendarioCiac'), // Controlla che il percorso del file sia corretto!
   { 
     ssr: false,
     loading: () => (
