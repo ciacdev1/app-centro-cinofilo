@@ -23,6 +23,7 @@ export default function Login() {
 
   // Controllo automatico della sessione per non perdere il login
   useEffect(() => {
+    if (typeof window !== 'undefined') {
     const recuperaSessioneEsistente = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
