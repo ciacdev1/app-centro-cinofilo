@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../supabase'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabaseClient' // (o il percorso dove si trova il tuo client supabase)
 
 export default function Login() {
   // Stati di navigazione interna: 'login' | 'registrati' | 'reset'
@@ -20,6 +22,32 @@ export default function Login() {
   const [errore, setErrore] = useState('')
   
   const router = useRouter()
+
+  // --- INIZIO CODICE DA INCOLLARE ---
+  useEffect(() => {
+    const recuperaSessioneEsistente = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        // Qui diciamo all'app cosa fare se l'utente era già loggato.
+        // Ad esempio, se usi una variabile "setVista" per cambiare schermata:
+        setVista('home_privata') // <-- Sostituisci 'home_privata' con il nome della tua schermata principale interna
+      }
+    }
+
+    recuperaSessioneEsistente()
+
+    // Resta in ascolto se l'utente fa login o logout
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setVista('home_privata') // <-- Anche qui, la tua vista interna
+      } else {
+        setVista('login') // Se si disconnette, torna al login
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+  // --- FINE CODICE DA INCOLLARE ---
 
   // 1. GESTIONE ACCESSO (LOGIN)
   const handleLogin = async (e) => {
