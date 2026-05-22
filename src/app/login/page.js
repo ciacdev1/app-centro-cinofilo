@@ -60,69 +60,53 @@ export default function Login() {
 
   // 2. GESTIONE REGISTRAZIONE (NUOVO ACCOUNT IN ATTESA)
   const handleRegistrazione = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setErrore('')
-    setMessaggioInfo('')
+  e.preventDefault()
+  setLoading(true)
+  setErrore('')
+  setMessaggioInfo('')
 
-    try {
-      if (!nome || !cognome) throw new Error('Inserisci nome e cognome completi.')
+  try {
+    if (!nome || !cognome) throw new Error('Inserisci nome e cognome completi.')
 
-      // Registrazione su Supabase Auth
-      // Registrazione su Supabase Auth con passaggio dei metadati al Trigger
-const { data: authData, error: authError } = await supabase.auth.signUp({
-  email: email.trim(),
-  password: password,
-  options: {
-    data: {
-      nome: nome.trim(),
-      cognome: cognome.trim(),
-      email: email.trim(), // Lo passiamo anche qui per sicurezza del Trigger
-      ruolo: 'puppy'       // Il ruolo iniziale che si aspetta il Trigger
-    }
-  }
-})
+    // Determina il ruolo in base alla selezione del form.
+    // Se non è stato selezionato nulla, usa 'puppy' come sicurezza.
+    const ruoloDaAssegnare = ruoloSelezionato ? ruoloSelezionato.trim() : 'puppy'
 
-if (authError) throw authError
-
-// NOTA: Non serve più il blocco "supabase.from('profili').insert(...)" 
-// perché ci pensa già il Trigger SQL su Supabase a creare la riga in 'profili' 
-// e in 'utenti_ruoli' usando i dati dentro 'options.data'!
-      if (authData?.user) {
-        // Inserimento nei profili con approvato = false
-        const { error: profError } = await supabase
-          .from('profili')
-          .insert([{
-            id: authData.user.id,
-            nome: nome.trim(),
-            cognome: cognome.trim(),
-            approvato: false // Verrà sbloccato dall'Admin
-          }])
-
-        if (profError) throw profError
-
-        // Assegnazione del ruolo richiesto (es. operatore o educatore)
-        await supabase
-          .from('utenti_ruoli')
-          .insert([{
-            profilo_id: authData.user.id,
-            ruolo: ruoloSelezionato
-          }])
-
-        setMessaggioInfo('🎉 Registrazione ricevuta! Non appena l\'amministratore verificherà la tua iscrizione al corso, riceverai l\'abilitazione ad accedere.')
-        setVista('login')
-        // Pulisci i campi
-        setPassword('')
-        setNome('')
-        setCognome('')
+    // Unica chiamata a Supabase Auth: passiamo tutti i dati nei metadati.
+    // Il Trigger sul database intercetterà questa chiamata e creerà automaticamente 
+    // i record nelle tabelle 'profili' (con approvato = false) e 'utenti_ruoli'.
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: password,
+      options: {
+        data: {
+          nome: nome.trim(),
+          cognome: cognome.trim(),
+          email: email.trim(),      // Passata nei metadati per sicurezza del Trigger
+          ruolo: ruoloDaAssegnare   // Passa dinamicamente il ruolo (es. operatore, educatore)
+        }
       }
-    } catch (err) {
-      setErrore(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+    })
 
+    if (authError) throw authError
+
+    // Se l'utente è stato creato con successo, la transazione sul database è completata
+    if (authData?.user) {
+      setMessaggioInfo('🎉 Registrazione ricevuta! Non appena l\'amministratore verificherà la tua iscrizione al corso, riceverai l\'abilitazione ad accedere.')
+      setVista('login')
+      
+      // Pulisci i campi del form
+      setPassword('')
+      setNome('')
+      setCognome('')
+      setEmail('') // Aggiunto per pulire anche il campo email
+    }
+  } catch (err) {
+    setErrore(err.message)
+  } finally {
+    setLoading(false)
+  }
+}
   // 3. GESTIONE RESET PASSWORD
  
 const handleResetPassword = async (e) => {
