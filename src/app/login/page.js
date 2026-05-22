@@ -69,13 +69,25 @@ export default function Login() {
       if (!nome || !cognome) throw new Error('Inserisci nome e cognome completi.')
 
       // Registrazione su Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password,
-      })
+      // Registrazione su Supabase Auth con passaggio dei metadati al Trigger
+const { data: authData, error: authError } = await supabase.auth.signUp({
+  email: email.trim(),
+  password: password,
+  options: {
+    data: {
+      nome: nome.trim(),
+      cognome: cognome.trim(),
+      email: email.trim(), // Lo passiamo anche qui per sicurezza del Trigger
+      ruolo: 'puppy'       // Il ruolo iniziale che si aspetta il Trigger
+    }
+  }
+})
 
-      if (authError) throw authError
+if (authError) throw authError
 
+// NOTA: Non serve più il blocco "supabase.from('profili').insert(...)" 
+// perché ci pensa già il Trigger SQL su Supabase a creare la riga in 'profili' 
+// e in 'utenti_ruoli' usando i dati dentro 'options.data'!
       if (authData?.user) {
         // Inserimento nei profili con approvato = false
         const { error: profError } = await supabase
