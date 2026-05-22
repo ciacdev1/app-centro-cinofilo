@@ -1,9 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react' // Pulito e raggruppato qui
 import { useRouter } from 'next/navigation'
-import { supabase } from '../supabase'
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient' // (o il percorso dove si trova il tuo client supabase)
+import { supabase } from '../supabase' // Usa il tuo percorso originale per supabase
 
 export default function Login() {
   // Stati di navigazione interna: 'login' | 'registrati' | 'reset'
@@ -14,7 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [nome, setNome] = useState('')
   const [cognome, setCognome] = useState('')
-  const [ruoloSelezionato, setRuoloSelezionato] = useState('operatore') // default allievo base
+  const [ruoloSelezionato, setRuoloSelezionato] = useState('operatore')
   
   // Stati di Feedback
   const [loading, setLoading] = useState(false)
@@ -23,14 +21,13 @@ export default function Login() {
   
   const router = useRouter()
 
-  // --- INIZIO CODICE DA INCOLLARE ---
+  // Controllo automatico della sessione per non perdere il login
   useEffect(() => {
     const recuperaSessioneEsistente = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
-        // Qui diciamo all'app cosa fare se l'utente era già loggato.
-        // Ad esempio, se usi una variabile "setVista" per cambiare schermata:
-        setVista('home_privata') // <-- Sostituisci 'home_privata' con il nome della tua schermata principale interna
+        // Se l'utente è già loggato, lo mandiamo alla dashboard/home principale
+        router.push('/dashboard') // <-- Modifica '/dashboard' con il percorso reale della tua home privata online
       }
     }
 
@@ -39,15 +36,14 @@ export default function Login() {
     // Resta in ascolto se l'utente fa login o logout
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setVista('home_privata') // <-- Anche qui, la tua vista interna
+        router.push('/dashboard') // <-- Modifica anche qui con il percorso reale
       } else {
-        setVista('login') // Se si disconnette, torna al login
+        setVista('login') 
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [])
-  // --- FINE CODICE DA INCOLLARE ---
+  }, [router])
 
   // 1. GESTIONE ACCESSO (LOGIN)
   const handleLogin = async (e) => {
