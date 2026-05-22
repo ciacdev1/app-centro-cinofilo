@@ -1,0 +1,16 @@
+
+{
+  "name": "CIAC Formazione",
+  "short_name": "CIAC",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f5f2",
+  "theme_color": "#f07f19",
+  "icons": [
+    {
+      "src": "/logo-ciac.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
