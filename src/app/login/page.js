@@ -27,7 +27,7 @@ export default function Login() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         // Se l'utente è già loggato, lo mandiamo alla dashboard/home principale
-        router.push('/formazione') // <-- Modifica '/dashboard' con il percorso reale della tua home privata online
+        router.push('/dashboard') // <-- Modifica '/dashboard' con il percorso reale della tua home privata online
       }
     }
 
@@ -36,7 +36,7 @@ export default function Login() {
     // Resta in ascolto se l'utente fa login o logout
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        router.push('/formazione') // <-- Modifica anche qui con il percorso reale
+        router.push('/dashboard') // <-- Modifica anche qui con il percorso reale
       } else {
         setVista('login') 
       }
